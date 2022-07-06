@@ -14,7 +14,7 @@ def main():
 	# 	bytes = f.read()
 
 	if check_json(bytes):
-		# fuzz_json(bytes)
+		# fuzz_json(sys.argv[1], sys.argv[2])
 		pass
 	elif check_xml(bytes):
 		# fuzz_xml(bytes)
