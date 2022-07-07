@@ -9,10 +9,11 @@ from pwn import *
 lock = mp.Lock()
 
 def func(length):
-	p = process(f'bin/plaintext2', level='critical')
+	p = process(f'bin/plaintext1', level='critical')
 	payload = generate_bytes(length)
 	p.sendline(payload)
 	p.wait_for_close()
+	# print(p.poll())
 	if p.poll() != 0:
 		with lock:
 			print(payload)
@@ -24,7 +25,7 @@ def main():
 		p.map(func, range(100))
 
 out = open("out", "w")
-sys.stdout = out
+# sys.stdout = out
 if __name__ == '__main__':
 	main()
 	out.close()
