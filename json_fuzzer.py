@@ -168,6 +168,12 @@ def smart_swap_string(data, field):
                 current = u.insert_into_string(current, i, random.choice(chars))
         data[field] = current
     elif option == 5:
+        # Adds a % every 3rd character (or a %n or %p)
+        chars = ['%', '%', '%', '%n', '%p']
+        for i in range(len(current)):
+            if i % 3 == 0:
+                current = u.insert_into_string(current, i, random.choice(chars))
+    elif option == 6:
         data[field] = ""
 
 def hello(length, name, another):
@@ -197,3 +203,12 @@ if __name__ == '__main__':
     # p = process("bin/json1")
     # p.sendline(raw_data)
     # print(p.recv())
+
+
+"""
+?EXTRA
+* if int:
+    * add string to end of int
+* insert non-ascii characters
+
+"""
