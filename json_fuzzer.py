@@ -7,6 +7,7 @@ from math import pi
 import multiprocessing as mp
 from functools import partial
 from pwn import *
+import os
 
 MAX_INT = 2147483647
 MIN_INT = -2147483648
@@ -34,18 +35,34 @@ def fuzz_json(prog_name, text, option):
         option = -1
     
     payload = json.dumps(data)
-    p = process(prog_name)
+    p = process(prog_name, level='critical')
     p.sendline(payload)
-    print(option)
-    p.send(b'\4')
+    # p.sendline(b"""
+#     {
+#     "len": 1212,
+#     "input": "AAAABBBBCCCC",
+#     "more_data": ["a", "bb"]
+# }
+# """)
+    # p.fileno()
+    # os.close(p.fileno())
     # p.close()
-    print(p.can_recv())
-    print(p.recv())
+    # print(option)
+    p.proc.stdin.close()
+    # p.sendline(b'\x04')
+    # p.sendline(b'more')
+    # p.shutdown("in")
+    # p.kill()
+    # p.clean() 
+    # p.wait_for_close()
+    # # p.close()
+    # print(p.can_recv())
+    # print(p.recv())
     # p.interactive()
     # p.wait_for_close()
     # print("HELLO")
-    print(p.poll())
-    if p.poll() != 0:
+    print(p.poll(True))
+    if p.poll() and p.poll() != -1:
         with lock:
             print(json.dumps(data, indent=2))
 
@@ -128,12 +145,14 @@ def smart_swap_int(data, field):
     elif option == 3:
         data[field] = 0
     elif option == 4:
+        print('here')
         data[field] = MAX_INT
     elif option == 5:
         data[field] = MIN_INT
     elif option == 6:
         data[field] = pi
     elif option == 7:
+        print('there')
         data[field] = MAX_INT + 1
     elif option == 8:
         data[field] = MIN_INT - 1
@@ -186,8 +205,8 @@ def simple(length):
         print(length)
 
 def main(text):
-    with mp.Pool(1) as p:
-        p.map(partial(fuzz_json, "bin/json1", text), range(1))
+    with mp.Pool(10) as p:
+        p.map(partial(fuzz_json, "bin/json1", text), range(100))
         # p.map(simple, range(20))
         # p.map(partial(hello, "beans", "howdy"), range(20))
         # p.starmap(hello, (range(20), 'hello'))
@@ -198,7 +217,7 @@ if __name__ == '__main__':
     with open("bin/json1.txt", "r") as f:
         # print(f.read())
         raw_data = f.read()
-
+    # fuzz_json('binjson1', )
     main(raw_data)
     # p = process("bin/json1")
     # p.sendline(raw_data)
