@@ -32,29 +32,6 @@ def fuzz_csv(program, sampleInputFile):
     if (exitCode != 0):
         print(f"The data that causes the program to crash is : {dataToSend}")
 
-    
-    # endTime = time.time() + 180
-    # while time.time() < endTime:
-    # io = process("bin/csv1")
-    # # loop through the list!
-    # #sendDataToPwnTwls(addLines(sampleInput),io)
-    # #sendDataToPwnTwls(modifiedData(sampleInput),io)
-    # #sendDataToPwnTwls(modifiedDelimiter(sampleInput),io)
-    # #sendEmptyToPwnTwls(io)
-    # io.proc.stdin.close()
-    # exitCode = io.poll(block=True)
-    # print(exitCode)
-
-    # # #csv2 
-    # io2 = process("bin/csv2")
-    # #sendDataToPwnTwls(modifiedData(sampleInput2),io2)
-    # #sendDataToPwnTwls(addLines(sampleInput2),io2)
-    # #sendDataToPwnTwls(modifiedDelimiter(sampleInput2),io2)  
-    # #sendEmptyToPwnTwls(io2)
-    # io2.proc.stdin.close()
-    # exitCode2 = io2.poll(block=True)
-    # print(exitCode2) 
-
 
 # given a iterable list, send in each line of the list to a process in pwntools
 def sendDataToPwnTwls(inputList,process):
