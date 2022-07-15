@@ -7,6 +7,7 @@ import random
 import os
 import time
 from pwn import *
+import utils as u
 
 sampleInput = "bin/csv1.txt"
 sampleInput2 = "bin/csv2.txt"
@@ -14,8 +15,8 @@ sampleInput2 = "bin/csv2.txt"
 
 def fuzz_csv(program, sampleInputFile):
     sampleInput = convertCsvToList(sampleInputFile)
-    option = randomAsciiFromItem(list(range(1,10000))) % 3
-    print(option)
+    option = randomAsciiFromItem(list(range(1,10000))) % 4
+
     if option == 0:
         dataToSend = addLines(sampleInput)
     elif option == 1:
@@ -23,7 +24,8 @@ def fuzz_csv(program, sampleInputFile):
     elif option == 2:
         # send in nothing to program, ie simulate CTRL-D
         dataToSend = None
-   
+    elif option == 3:
+        dataToSend = flipBits(sampleInput)
     io = process(program)
     if (dataToSend != None):
         sendDataToPwnTwls(dataToSend,io)
@@ -31,8 +33,7 @@ def fuzz_csv(program, sampleInputFile):
     exitCode = io.poll(block=True)
     if (exitCode != 0):
         print(f"The data that causes the program to crash is : {dataToSend}")
-
-
+ 
 # given a iterable list, send in each line of the list to a process in pwntools
 def sendDataToPwnTwls(inputList,process):
     for line in inputList:
@@ -97,6 +98,14 @@ def convert2DList(list,delimiter):
 #             if (i != 0):
 #                 sameData.append(row)
 #     return convert2DList(modifiedData,',')
+
+# input 2d array
+# output a random bit is changed 
+def flipBits(sampleInput):
+    row = randomAsciiFromItem(list(range(0,len(sampleInput))))
+    col = randomAsciiFromItem(list(range(0,len(sampleInput[row]))))
+    bits = u.str_to_bits(sampleInput[row][col])
+    sampleInput[row][col] = u.bits_to_str(u.flip_bits(bits))
 
 
 selection = ["%s","%n","A"*99, "%n"]
