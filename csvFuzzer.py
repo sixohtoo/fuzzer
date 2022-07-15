@@ -9,25 +9,35 @@ import time
 from pwn import *
 
 sampleInput = "bin/csv1.txt"
+sampleInput2 = "bin/csv2.txt"
 
 def main():
 
-    io = process("bin/csv1")
-    # loop through the list!
-    sendDataToTwls(modifiedData(sampleInput),io)
-    sendDataToTwls(addLines(sampleInput),io)
-    io.interactive()
+    endTime = time.time() + 180
+    while time.time() < endTime:
+        io = process("bin/csv1")
+        # loop through the list!
+        sendDataToPwnTwls(modifiedData(sampleInput),io)
+        sendDataToPwnTwls(addLines(sampleInput),io)
+        # sendDataToPwnTwls(modifiedDelimiter(sampleInput),io)   
 
-    # TODO: check only run checking for 3mins - loop to call functions
-    # for i in run(180):
-    # endTime = time.time() + 180
-    # while time.time() < endTime:
+        io2 = process("bin/csv2")
+        sendDataToPwnTwls(modifiedData(sampleInput2),io2)
+        sendDataToPwnTwls(addLines(sampleInput2),io2)
+        #sendDataToPwnTwls(modifiedDelimiter(sampleInput2),io2)   
 
 
-def sendDataToTwls(inputList,process):
+# given a iterable list, send in each line of the list to a process in pwntools
+def sendDataToPwnTwls(inputList,process):
+    print(len(inputList),inputList)
     for line in inputList:
-        print(line.encode())
+        print(line)
         process.sendline(line.encode())
+
+# send CTRL-D to proram
+# TODO: make it work
+def sendEmptyToPwnTwls(process):
+    process.sendline(b"\4")
 
 
 # generates a random ascii character from ascii_letters constant(combination of both upper and lower case)
@@ -54,44 +64,6 @@ def convertCsvToList(csvFile):
             outputList.append(row)
     return outputList
 
-# return a modified version of the header in sampleInput
-def manipulateCSVheader(sampleInput):
-    modifiedHeader = []
-    sameData = []
-    with open(sampleInput, mode='r') as sampleInputFile:
-        for i,row in enumerate(csv.reader(sampleInputFile,delimiter=',')):
-            # changing the ascii characters of the header
-            for item in row:
-                # only manipulate the header
-                if i == 0:
-                    charToReplace = randomAsciiFromItem(item)
-                    if ( charToReplace in item):
-                        item = item.replace(charToReplace,randomAsciiGen())                      
-                        modifiedHeader.append(item)
-            if (i != 0):
-                sameData.append(row)
-    return convert2DList(modifiedData,',')
-
-# send
-selection = ["%s","%n","A"*99, "%n"]
-def modifiedData(sampleInput):
-    modifiedData = []
-    with open(sampleInput, mode='r') as sampleInputFile:
-        for i,row in enumerate(csv.reader(sampleInputFile)):
-            # changing the ascii characters of the input
-            newRow = []
-            for item in row:
-                # keep the header the same
-                if i != 0:
-                    item += randomAsciiFromItem(selection)
-                    newRow.append(item)
-            if (i == 0):          
-                modifiedData.append(row) 
-            else:
-                modifiedData.append(newRow)
-
-    return convert2DList(modifiedData,',')
-
 def convert2DList(list,delimiter):
     retList = []
     for i,row in enumerate(list):
@@ -104,21 +76,67 @@ def convert2DList(list,delimiter):
         retList.append(newLine)
     return retList
 
+# TODO : return a modified version of the header in sampleInput
+# def manipulateCSVheader(sampleInput):
+#     modifiedHeader = []
+#     sameData = []
+#     with open(sampleInput, mode='r') as sampleInputFile:
+#         for i,row in enumerate(csv.reader(sampleInputFile,delimiter=',')):
+#             # changing the ascii characters of the header
+#             for item in row:
+#                 # only manipulate the header
+#                 if i == 0:
+#                     charToReplace = randomAsciiFromItem(item)
+#                     if ( charToReplace in item):
+#                         item = item.replace(charToReplace,randomAsciiGen())                      
+#                         modifiedHeader.append(item)
+#             if (i != 0):
+#                 sameData.append(row)
+#     return convert2DList(modifiedData,',')
+
+
+selection = ["%s","%n","A"*99, "%n"]
+def modifiedData(sampleInput):
+    modifiedData = convertCsvToList(sampleInput)
+    for i,row in enumerate(modifiedData):
+        # changing the ascii characters of the input
+            newRow = []
+            for j,item in enumerate(row):
+                # keep the header the same
+                if i != 0:
+                    item += randomAsciiFromItem(selection)
+                    modifiedData[i][j] = item
+    return convert2DList(modifiedData,',')
 
 # send a modified delimiter ("\n,""(empty string),random char,%s")  
+# TODO : fix eof in pwntools bug
 def modifiedDelimiter(sampleInput):
     modifiedDelimiter = ["\n","","%","%n","%s","%d",randomAsciiGen()]
     return convert2DList(convertCsvToList(sampleInput), random.choice(modifiedDelimiter))
 
+# add large amount of rows to the csvFile
 def addLines(sampleInput):
     data = convertCsvToList(sampleInput)
-    row = ["%n","%d","%s","%p"]
+    rowSelection= ["%n","%d","%s","%p","%x"]
+    rowToAdd = []
+    # make a new row, with number of elements as large as the width
+    for i in range(0,len(data[0])):
+        rowToAdd.append(randomAsciiFromItem(rowSelection))
     # choose the number of times to loop over and add row of data
-    selection = [8000,9000,10000]
+    selection = [40,50,60,70,80,90,100]
     for i in range(randomAsciiFromItem(selection)):
-        data.append(row)
+        data.append(rowToAdd)
     return convert2DList(data,',')
+
+
+#------------------------------------------ Generating new input to fuzz ------------------------------------- #
+# send in am empty file, with no elements
+def emptyCsv():
+    return []
+
+# def largeColoum():
+#     selection = [10,20,30,40,50,60,70,80,90,100]
+
 
 if __name__ == "__main__":
     main()
-
