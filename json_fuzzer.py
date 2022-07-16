@@ -41,7 +41,7 @@ def fuzz_json(prog_name, text, lock, option):
     
     payload = json.dumps(data)
     p = process(prog_name, level='critical')
-    p.sendline(payload)
+    p.sendline(payload.encode())
 
     p.proc.stdin.close()
     if p.poll(True) == -11:

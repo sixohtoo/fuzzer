@@ -19,15 +19,10 @@ def main():
 		text = f.read()
 
 	if check_json(text):
-		print("JSON")
 		function = json_fuzzer.fuzz_json
 	else:
-		print("CSV")
 		function = csvFuzzer.fuzz_csv
-		text = convertCsvToList(sys.argv[2])
 
-	print(sys.argv[1])
-	print(text)
 	with mp.Pool(20) as p:
 		p.map(partial(function, sys.argv[1], text, lock), range(1000))
 

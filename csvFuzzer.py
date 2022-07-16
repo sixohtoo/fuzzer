@@ -8,14 +8,15 @@ import os
 import time
 from pwn import *
 import utils as u
+import io as ioModule
 
 sampleInput = "bin/csv1.txt"
 sampleInput2 = "bin/csv2.txt"
 
 
-def fuzz_csv(program, sampleInput, lock, option):
+def fuzz_csv(program, sampleInputText, lock, option):
     option %= 4
-    # sampleInput = convertCsvToList(sampleInputFile)
+    sampleInput = convertCsvToList(sampleInputText)
     # option = randomAsciiFromItem(list(range(1,10000))) % 4
 
     if option == 0:
@@ -27,7 +28,7 @@ def fuzz_csv(program, sampleInput, lock, option):
         dataToSend = None
     elif option == 3:
         dataToSend = flipBits(sampleInput)
-    io = process(program)
+    io = process(program, level='critical')
     if (dataToSend != None):
         sendDataToPwnTwls(dataToSend,io)
     io.proc.stdin.close()
@@ -35,15 +36,14 @@ def fuzz_csv(program, sampleInput, lock, option):
     if (exitCode == -11):
         with lock:
             with open("bad.txt", "w") as f:
-                f.write(dataToSend)
+                for line in dataToSend:
+                    f.write(line + '\n')
     io.close()
-        # print(f"The data that causes the program to crash is : {dataToSend}")
  
 # given a iterable list, send in each line of the list to a process in pwntools
 def sendDataToPwnTwls(inputList,process):
     for line in inputList:
-        process.send(line.encode())
-        process.sendline()
+        process.sendline(line.encode())
 
 # send CTRL-D to proram
 # TODO: make it work
@@ -68,11 +68,11 @@ def randomAsciiFromItem(selection):
 #i,j,k,et
 # --------------------------------
 # will output to [[header,must,stay,intact],[a,b,c,S],[e,f,g,ecr],[i,j,k,et]]
-def convertCsvToList(csvFile):
+def convertCsvToList(csvString):
     outputList = []
-    with open(csvFile, mode='r') as f:
-        for row in csv.reader(f,delimiter=','):
-            outputList.append(row)
+    f = ioModule.StringIO(csvString)
+    for row in csv.reader(f,delimiter=','):
+        outputList.append(row)
     return outputList
 
 def convert2DList(list,delimiter):
