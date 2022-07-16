@@ -5,47 +5,75 @@ import sys
 import logging
 import json
 import xml
+import json_fuzzer
+import csvFuzzer
+import multiprocessing as mp
+from functools import partial
+import csv
 
+
+lock = mp.Manager().Lock()
 
 def main():
-	logging.info("beans")
-	# bytes = b''
-	# with open(sys.argv[2], "rb") as f:
-	# 	bytes = f.read()
+	with open(sys.argv[2], "r") as f:
+		text = f.read()
 
-	if check_json(bytes):
-		# fuzz_json(sys.argv[1], sys.argv[2])
-		pass
-	elif check_xml(bytes):
-		# fuzz_xml(bytes)
-		pass
-	elif check_csv(bytes):
-		# fuzz_csv(bytes)
-		pass
+	if check_json(text):
+		print("JSON")
+		function = json_fuzzer.fuzz_json
 	else:
-		# fuzz_plaintext(bytes)
-		pass
+		print("CSV")
+		function = csvFuzzer.fuzz_csv
+		text = convertCsvToList(sys.argv[2])
+
+	print(sys.argv[1])
+	print(text)
+	with mp.Pool(20) as p:
+		p.map(partial(function, sys.argv[1], text, lock), range(1000))
 
 def check_json(text):
-	return False
-	# try:
-	# 	return json.loads(text)
-	# except:
-	# 	return False
+	try:
+		return json.loads(text)
+	except:
+		return False
 
 def check_xml(text):
-	return False
-	# try:
-	# 	return xml.
-	# except:
-	# 	return False
+	return text[0] == '<'
 
 def check_csv(text):
+
 	return False
 
 
+# convert the csv file to a 2d list with each index into array being a line
+# for exam a csv file containing:
+# -----------------------------
+# header,must,stay,intact
+#a,b,c,S
+#e,f,g,ecr
+#i,j,k,et
+# --------------------------------
+# will output to [[header,must,stay,intact],[a,b,c,S],[e,f,g,ecr],[i,j,k,et]]
+def convertCsvToList(csvFile):
+    outputList = []
+    with open(csvFile, mode='r') as f:
+        for row in csv.reader(f,delimiter=','):
+            outputList.append(row)
+    return outputList
+
+def convert2DList(list,delimiter):
+    retList = []
+    for i,row in enumerate(list):
+        newLine = ""
+        for j,word in enumerate(row):
+            if (j != 0):
+                newLine += delimiter + word
+            elif (j == 0):
+                newLine = word
+        retList.append(newLine)
+    return retList
 
 if __name__ == '__main__':
-	sys.stdout = open("out", "w")
+	# sys.stdout = open("out", "w")
 	main()
-	sys.stdout.close()
+	# sys.stdout.close()
