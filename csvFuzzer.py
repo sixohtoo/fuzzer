@@ -17,7 +17,6 @@ sampleInput2 = "bin/csv2.txt"
 def fuzz_csv(program, sampleInputText, lock, option):
     option %= 4
     sampleInput = convertCsvToList(sampleInputText)
-    # option = randomAsciiFromItem(list(range(1,10000))) % 4
 
     if option == 0:
         dataToSend = addLines(sampleInput)

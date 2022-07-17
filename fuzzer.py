@@ -69,6 +69,4 @@ def convert2DList(list,delimiter):
     return retList
 
 if __name__ == '__main__':
-	# sys.stdout = open("out", "w")
 	main()
-	# sys.stdout.close()

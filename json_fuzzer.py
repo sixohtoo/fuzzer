@@ -205,29 +205,3 @@ def mutate_raw_string(text):
                 continue
             new += letter
         return new
-
-def main(text):
-    with mp.Pool(30) as p:
-        # p.map(partial(fuzz_json, "bin/json1", text), itertools.count(start=0, step=1))
-        p.map(partial(fuzz_json, "bin/json1", text), range(10000))
-
-
-if __name__ == '__main__':
-    # main()
-    with open("bin/json1.txt", "r") as f:
-        # print(f.read())
-        raw_data = f.read()
-    # fuzz_json('binjson1', )
-    main(raw_data)
-    # p = process("bin/json1")
-    # p.sendline(raw_data)
-    # print(p.recv())
-
-
-"""
-?EXTRA
-* if int:
-    * add string to end of int
-* insert non-ascii characters
-
-"""
