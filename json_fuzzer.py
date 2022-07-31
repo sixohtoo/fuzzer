@@ -39,15 +39,16 @@ def fuzz_json(prog_name, text, lock, option):
     elif option == 5:
         final = mutate_raw_string(text)
     
-    payload = json.dumps(data)
+    payload = final
     p = process(prog_name, level='critical')
     p.sendline(payload.encode())
 
     p.proc.stdin.close()
     if p.poll(True) == -11:
         with lock:
+            print('yay')
             with open("bad.txt", "w") as f:
-                json.dump(data, f, indent=2)
+                f.write(final)
     p.close()
 
 
@@ -133,7 +134,7 @@ def smart_swap_int(data, field):
 # Field expects a string, so try
 # normal string, large string, byte string, add random \s, add ", " and `, empty string
 def smart_swap_string(data, field):
-    option = random.randrange(0, 6)
+    option = random.randrange(0, 8)
     current = data[field]
     length = random.randrange(1, 10000)
     if option == 0:
@@ -163,6 +164,9 @@ def smart_swap_string(data, field):
                 current = u.insert_into_string(current, i, random.choice(chars))
     elif option == 6:
         data[field] = ""
+    elif option == 7:
+        byte = random.randrange(0, 255)
+        data[field] = p8(byte)
 
 def mutate_raw_string(text):
     """
@@ -205,3 +209,8 @@ def mutate_raw_string(text):
                 continue
             new += letter
         return new
+    elif option == 9:
+        c = random.randrange(32, 127)
+        repeat = random.randrange(200, 1000)
+        ret = f'{{{chr(c) * repeat}}}'
+        return ret

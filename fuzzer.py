@@ -24,7 +24,7 @@ def main():
 		function = csvFuzzer.fuzz_csv
 
 	with mp.Pool(20) as p:
-		p.map(partial(function, sys.argv[1], text, lock), range(1000))
+		p.map(partial(function, sys.argv[1], text, lock), range(100000))
 
 def check_json(text):
 	try:
@@ -69,4 +69,6 @@ def convert2DList(list,delimiter):
     return retList
 
 if __name__ == '__main__':
+	# lock = mp.Manager().Lock()
+
 	main()
