@@ -3,7 +3,7 @@
 from pwn import *
 import sys
 import logging
-import json
+import json 
 import xml
 import json_fuzzer
 import csvFuzzer
