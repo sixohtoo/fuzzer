@@ -3,44 +3,73 @@
 from pwn import *
 import sys
 import logging
-from input_checks import check_json, check_csv, check_xml
-from json_fuzzer import fuzz_json
-from runner import runner
+import json
+import xml
+import json_fuzzer
+import csvFuzzer
+import multiprocessing as mp
+from functools import partial
+import csv
 
-def main(binary, input_text):
-	
-	if check_json(input_text):
-		print('Input file is a json')
-		# fuzz_json(binary, input_text, 1) # Not sure what option is here so just put 0
-		runner(binary, input_text, 0)
-		# TODO
-		
-	elif check_xml(input_text):
-		# fuzz_xml(bytes)
-		pass
-	elif check_csv(input_text):
-		print('Input file is CSV')
 
-		# TODO
-		# fuzz_csv(bytes)
-		pass
+lock = mp.Manager().Lock()
+
+def main():
+	with open(sys.argv[2], "r") as f:
+		text = f.read()
+
+	if check_json(text):
+		function = json_fuzzer.fuzz_json
 	else:
-		print('Input file is not a valid file type(yet)')
-		# fuzz_plaintext(bytes)
-		pass
+		function = csvFuzzer.fuzz_csv
 
+	with mp.Pool(20) as p:
+		p.map(partial(function, sys.argv[1], text, lock), range(100000))
+
+def check_json(text):
+	try:
+		return json.loads(text)
+	except:
+		return False
+
+def check_xml(text):
+	return text[0] == '<'
+
+def check_csv(text):
+
+	return False
+
+
+# convert the csv file to a 2d list with each index into array being a line
+# for exam a csv file containing:
+# -----------------------------
+# header,must,stay,intact
+#a,b,c,S
+#e,f,g,ecr
+#i,j,k,et
+# --------------------------------
+# will output to [[header,must,stay,intact],[a,b,c,S],[e,f,g,ecr],[i,j,k,et]]
+def convertCsvToList(csvFile):
+    outputList = []
+    with open(csvFile, mode='r') as f:
+        for row in csv.reader(f,delimiter=','):
+            outputList.append(row)
+    return outputList
+
+def convert2DList(list,delimiter):
+    retList = []
+    for i,row in enumerate(list):
+        newLine = ""
+        for j,word in enumerate(row):
+            if (j != 0):
+                newLine += delimiter + word
+            elif (j == 0):
+                newLine = word
+        retList.append(newLine)
+    return retList
 
 if __name__ == '__main__':
-	# sys.stdout = open("out", "w")
+	# lock = mp.Manager().Lock()
 
-	if(len(sys.argv) != 3):
-		sys.exit('Usage: ./fuzzer program sampleinput.txt')
-
-	try:
-		binary = sys.argv[1]
-		input_text = open(sys.argv[2], "r")
-		
-	except:
-		sys.exit('Usage: ./fuzzer program sampleinput.txt')
-	main(binary, input_text)
-	# sys.stdout.close()
+	main()
+>>>>>>> master

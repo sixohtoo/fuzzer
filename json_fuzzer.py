@@ -7,47 +7,49 @@ from math import pi
 import multiprocessing as mp
 from functools import partial
 from pwn import *
+import os
+import itertools
 
 MAX_INT = 2147483647
 MIN_INT = -2147483648
 
 lock = mp.Lock()
 
-def fuzz_json(prog_name, text, option):
-    # with open(input_name, "r") as f:
-    #     data_raw = f.read()
-    # option = 0
-    option %= 5
-    # while True:
+def fuzz_json(prog_name, text, lock, option):
+    option %= 6
+
     data = json.loads(text)
     field = u.get_random_field(data)
+    final = ''
     if option == 0:
         add_field(data)
+        final = json.dumps(data)
     elif option == 1:
         remove_field(data, field)
+        final = json.dumps(data)
     elif option == 2:
-        flip_bits(data, field)
+        data[field] = flip_bits(data[field])
+        final = json.dumps(data)
     elif option == 3:
         swap_type(data, field)
+        final = json.dumps(data)
     elif option == 4:
         smart_swap(data, field)
-        option = -1
+        final = json.dumps(data)
+    elif option == 5:
+        final = mutate_raw_string(text)
     
-    payload = json.dumps(data)
-    p = process(prog_name)
-    p.sendline(payload)
-    print(option)
-    p.send(b'\4')
-    # p.close()
-    print(p.can_recv())
-    print(p.recv())
-    # p.interactive()
-    # p.wait_for_close()
-    # print("HELLO")
-    print(p.poll())
-    if p.poll() != 0:
+    payload = final
+    p = process(prog_name, level='critical')
+    p.sendline(payload.encode())
+
+    p.proc.stdin.close()
+    if p.poll(True) == -11:
         with lock:
-            print(json.dumps(data, indent=2))
+            print('yay')
+            with open("bad.txt", "w") as f:
+                f.write(final)
+    p.close()
 
 
     
@@ -57,30 +59,22 @@ def add_field(data):
     data['another'] = 602.602
 
 def remove_field(data, field):
-    # print('removing', field)
     del data[field]
 
-# ''.join(format(i, '08b') for i in bytearray(test_str, encoding ='utf-8'))
-# ''.join(chr(int(''.join(x), 2)) for x in zip(*[iter(b)]*8))
-def flip_bits(data, field):
-    current = data[field]
-    # print('flipping', field)
+def flip_bits(current):
     if isinstance(current, int):
         bits = bin(current)
-        data[field] = int(u.flip_bits(bits[2:]), 2)
+        return int(u.flip_bits(bits[2:]), 2)
     elif isinstance(current, str):
         bits = u.str_to_bits(current)
-        data[field] = u.bits_to_str(u.flip_bits(bits))
+        return u.bits_to_str(u.flip_bits(bits))
 
-# make this recursive somehow (lists inside of dicts inside of lists, etc)
-# Maybe add function as a data type?
 def swap_type(data, field):
     '''
     types: int, string, list, empty list, dict, empty dictionary, bool
     '''
-    # print('swapping', field)
     option = random.randrange(0, 8)
-    # print("chose option", option)
+
     current = data[field]
     if option == 0: # int
         data[field] = 3
@@ -105,7 +99,6 @@ def swap_type(data, field):
 
 
 def smart_swap(data, field):
-    # print('smart swapping', field)
     current = data[field]
     if isinstance(current, int):
         smart_swap_int(data, field)
@@ -117,8 +110,6 @@ def smart_swap(data, field):
 def smart_swap_int(data, field):
     option = random.randrange(0, 10)
     current = data[field]
-    # print('smart string', field)
-    # print('chose option', option)
     if option == 0:
         data[field] = int(current)
     elif option == 1:
@@ -143,11 +134,9 @@ def smart_swap_int(data, field):
 # Field expects a string, so try
 # normal string, large string, byte string, add random \s, add ", " and `, empty string
 def smart_swap_string(data, field):
-    option = random.randrange(0, 6)
+    option = random.randrange(0, 8)
     current = data[field]
     length = random.randrange(1, 10000)
-    # print('smart string', field)
-    # print('chose option', option)
     if option == 0:
         data[field] = str(current)
     elif option == 1:
@@ -175,40 +164,53 @@ def smart_swap_string(data, field):
                 current = u.insert_into_string(current, i, random.choice(chars))
     elif option == 6:
         data[field] = ""
+    elif option == 7:
+        byte = random.randrange(0, 255)
+        data[field] = p8(byte)
 
-def hello(length, name, another):
-    # time.sleep(1)
-    with lock:
-        print(length, name, another)
-
-def simple(length):
-    with lock:
-        print(length)
-
-def main(text):
-    with mp.Pool(1) as p:
-        p.map(partial(fuzz_json, "bin/json1", text), range(1))
-        # p.map(simple, range(20))
-        # p.map(partial(hello, "beans", "howdy"), range(20))
-        # p.starmap(hello, (range(20), 'hello'))
-
-
-if __name__ == '__main__':
-    # main()
-    with open("bin/json1.txt", "r") as f:
-        # print(f.read())
-        raw_data = f.read()
-
-    main(raw_data)
-    # p = process("bin/json1")
-    # p.sendline(raw_data)
-    # print(p.recv())
-
-
-"""
-?EXTRA
-* if int:
-    * add string to end of int
-* insert non-ascii characters
-
-"""
+def mutate_raw_string(text):
+    """
+        Mutating raw json string strategies
+        0. flip random bits
+        1. append random bytes after jsonobject
+        2. append jsonobject after random bytes
+        3. empty string
+        4. duplicate entire string
+        5. duplicate random section
+        6. replace all " with ' (breaks it for some reason)
+        7. replace all ' with "
+        8. Delete random " or '
+    """
+    option = random.randrange(0, 10)
+    if option == 0:
+        return flip_bits(text)
+    elif option == 1:
+        return text + str(u.generate_bytes(15))
+    elif option == 2:
+        return str(u.generate_bytes(15)) + text
+    elif option == 3:
+        return ''
+    elif option == 4:
+        return text + text
+    elif option == 5:
+        start = random.randrange(0, len(text))
+        end = random.randrange(start, len(text))
+        copy = text[start:end]
+        return text[:end] + copy + text[end:]
+    elif option == 6:
+        return text.replace("\"", "\'")
+    elif option == 7:
+        return text.replace("\'", "\"")
+    elif option == 8:
+        replace = set(['\'', '\"'])
+        new = ""
+        for letter in text:
+            if letter in replace and random.randrange(0, 3) == 0:
+                continue
+            new += letter
+        return new
+    elif option == 9:
+        c = random.randrange(32, 127)
+        repeat = random.randrange(200, 1000)
+        ret = f'{{{chr(c) * repeat}}}'
+        return ret
