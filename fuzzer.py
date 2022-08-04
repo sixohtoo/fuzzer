@@ -10,34 +10,67 @@ import csvFuzzer
 import multiprocessing as mp
 from functools import partial
 import csv
+import time
 
 
 lock = mp.Manager().Lock()
 
 def main():
-	with open(sys.argv[2], "r") as f:
-		text = f.read()
+
+	if len(sys.argv) != 3:
+		sys.exit("Usage: ./fuzzer program sampleinput.txt")
+
+	try:
+		text = open(sys.argv[2], "r")
+	except:
+		print("Error:", sys.exc_info()[0])
+		sys.exit("Usage: ./fuzzer program sampleinput.txt")
+
+	start = time.time()
 
 	if check_json(text):
+		print('File is json')
 		function = json_fuzzer.fuzz_json
-	else:
+	elif check_csv(text):
+		print('File is csv')
 		function = csvFuzzer.fuzz_csv
-
+	else:
+		print('IDK')
+		exit(0)
+	input_text = open(sys.argv[2], "r").read()
 	with mp.Pool(20) as p:
-		p.map(partial(function, sys.argv[1], text, lock), range(100000))
+		p.map(partial(function, sys.argv[1], input_text, lock), range(100000))
+
+
 
 def check_json(text):
+	text.seek(0)
+
 	try:
-		return json.loads(text)
+		json.loads(text.read().strip())
 	except:
 		return False
+
+	return True
 
 def check_xml(text):
 	return text[0] == '<'
 
 def check_csv(text):
+	# Move to the start of the file
+	text.seek(0)
 
-	return False
+	lines = text.readlines()
+	commas = lines[0].count(",") # count the commas and see if there's the same amount on each line
+
+	if len(lines) <=1 or commas == 0:
+		return False
+
+	for line in lines:
+		if line.count(",") != commas:
+			return False
+
+	return True
 
 
 # convert the csv file to a 2d list with each index into array being a line
@@ -72,4 +105,3 @@ if __name__ == '__main__':
 	# lock = mp.Manager().Lock()
 
 	main()
->>>>>>> master
