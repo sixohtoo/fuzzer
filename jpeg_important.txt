@@ -1,0 +1,4 @@
+https://docs.fileformat.com/image/jpeg/
+
+Important bytes:
+    * 

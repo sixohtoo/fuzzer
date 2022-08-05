@@ -46,7 +46,6 @@ def fuzz_json(prog_name, text, lock, option):
     p.proc.stdin.close()
     if p.poll(True) == -11:
         with lock:
-            print('yay')
             with open("bad.txt", "w") as f:
                 f.write(final)
     p.close()
