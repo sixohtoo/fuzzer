@@ -1,3 +1,7 @@
+"""
+This file contains all the required helper functions for  
+xml fuzzer.
+"""
 import re
 import random
 from enum import Enum
@@ -32,6 +36,21 @@ class FUZZ_CONSTANTS(Enum):
     SPECIAL_CHAR4 = "'"
     SPECIAL_CHAR5 = '"'
 
+class ELEMENTS(Enum):
+    """
+    All the necessary DOM elements to be added lie here. 
+    """
+    # Basic XML/HTML DOM elements
+    DIV = '<div added="yes" id="yes"><a added="yes" href="http://nowebsite.com">Nothing</a><link added="yes" href="http://nowebsite.com" /><span added="yes">text</span></div>'
+    SPAN = '<span added="yes">Nothing</span>'
+    A = '<a added = "yes" href="http://nowebsite.com">Nothing</a>'
+    P = '<p added="yes">Nothing</p>'
+
+    # Basic DOM elements with many attributes
+    DIV_ATTRIBUTES = '<div added="yes" id="yes" a1="idk" a2="idk" a3="idk"></div>'
+    SPAN_ATTRIBUTES = '<span added="yes" a1="idk" a2="idk" a3="idk"></span>'
+    A_ATTRIBUTES = '<a added = "yes" href="http://nowebsite.com" a1="idk" a2="idk" a3="idk"></a>'
+    P_ATTRIBUTES = '<p added="yes" a1="idk" a2="idk" a3="idk"></p>'
 
 def bits_flip(str):
     """
@@ -93,24 +112,35 @@ def bytes_replace(str):
     or any pre-defined fuzzed constants.
     """
     choices = [fc.value for fc in FUZZ_CONSTANTS]
-    length = random.randint(1,10000)
-    choices.append(generate_bstring(length))
+    # length = random.randint(1,10000)
+    # choices.append(generate_bstring(length))
 
     choose = random.choice(choices)
-    
     return choose 
 
 
-def check_tag(tag):
+def check_text_modification(tag):
     """
-    Check if the text of the given tag are among those tags 
-    whose text cannot be modified.
+    Check if the text modification of the given tag
+    is valid.
     """
     # Tags that their text cannot be modified
     # Modifying their text will result in xml parse error
-    tags = ["html", "head","link", "body", "div", "tail"]
+    tags = ["root", "html", "head","link", "body", "div", "tail"]
 
     if tag in tags:
-        return True
-    return False
+        return False
+    return True
 
+def check_element_modification(tag):
+    """
+    Check if the adding element to the given tag 
+    is  necessary.
+    """
+    # Adding elements to these tag is useless and 
+    # increase the time to find a bug
+    tags = ["root", "html", "head", "link", "body", "a", "h1", "tail"]
+
+    if tag in tags:
+        return False
+    return True
