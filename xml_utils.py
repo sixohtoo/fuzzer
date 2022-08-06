@@ -118,7 +118,6 @@ def bytes_replace(str):
     choose = random.choice(choices)
     return choose 
 
-
 def check_text_modification(tag):
     """
     Check if the text modification of the given tag
