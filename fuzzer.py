@@ -7,6 +7,7 @@ import json
 import xml
 import json_fuzzer
 import csvFuzzer
+import plaintext_fuzzer
 import multiprocessing as mp
 from functools import partial
 import csv
@@ -26,7 +27,7 @@ def main():
 		print("Error:", sys.exc_info()[0])
 		sys.exit("Usage: ./fuzzer program sampleinput.txt")
 
-	start = time.time()
+	start_time = time.time()
 
 	if check_json(text):
 		print('File is json')
@@ -35,11 +36,18 @@ def main():
 		print('File is csv')
 		function = csvFuzzer.fuzz_csv
 	else:
-		print('IDK')
-		exit(0)
+		print('File is plaintext')
+		function = plaintext_fuzzer.fuzz_plaintext
+
 	input_text = open(sys.argv[2], "r").read()
 	with mp.Pool(20) as p:
-		p.map(partial(function, sys.argv[1], input_text, lock), range(100000))
+		p.map(partial(function, sys.argv[1], input_text, lock), range(10000))
+
+	print('Fuzzing done')
+
+	end_time = time.time()
+
+	print('Fuzzer ran for ' + str(end_time-start_time) + ' seconds.')
 
 
 
