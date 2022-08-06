@@ -6,12 +6,12 @@ import multiprocessing as mp
 import subprocess as sub
 from itertools import permutations
 from pwn import *
+import utils as u
 
 lock = mp.Lock()
 
 def fuzz_plaintext(prog_name, text, lock, option):
-	option %= 3
-
+	option %= 4
 	p = process(prog_name, level = 'critical')
 	
 	input_text = text.split()
@@ -22,7 +22,10 @@ def fuzz_plaintext(prog_name, text, lock, option):
 		payload = generate_random_ascii(random.randrange(0, 10000))
 	elif option == 2:
 		payload = generate_random_number(random.randrange(0, 10000))
-	
+	elif option == 3:
+		payload = flip_bits(text)
+
+
 	# If the input text is just 1 line then we just send our payload
 	if len(input_text) == 1:
 		p.sendline(payload.encode())
@@ -84,6 +87,18 @@ def generate_random_ascii(length):
 
 def generate_random_number(num_range):
 	return str(random.randint(-num_range, num_range))
+
+def flip_bits(sample_input):
+    return u.bits_to_str(u.flip_bits(u.str_to_bits(sample_input)))
+
+def keyword_addition(sample_input):
+	sample_input += "admin"
+	sample_input += "%d"
+	sample_input += "password"
+	return sample_input
+
+def large_plaintext(sample_input):
+	return sample_input + ("%d%n99999" * 999)
 
 
 if __name__ == '__main__':
