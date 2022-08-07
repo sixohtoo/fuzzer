@@ -112,8 +112,8 @@ def bytes_replace(str):
     or any pre-defined fuzzed constants.
     """
     choices = [fc.value for fc in FUZZ_CONSTANTS]
-    # length = random.randint(1,10000)
-    # choices.append(generate_bstring(length))
+    length = random.randint(1,10000)
+    choices.append(generate_bstring(length))
 
     choose = random.choice(choices)
     return choose 

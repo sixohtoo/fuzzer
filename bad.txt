@@ -1,17 +1,1 @@
-<html>
-    <head>
-        <link href="%x" />
-    </head>
-    <body>
-        <h1 />
-    </body>
-
-    <div id="&amp;">
-        <a href="-2147483648">-2147483649</a>
-    <span added="yes" a1="idk" a2="idk" a3="idk">1</span><span added="yes" a1="idk" a2="idk" a3="idk">2147483647</span><a added="yes" href="http://nowebsite.com">&amp;</a><div added="yes" id="yes"><a added="yes" href="http://nowebsite.com">&lt;</a><link added="yes" href="http://nowebsite.com" /><span added="yes">&lt;</span></div><p added="yes" a1="idk" a2="idk" a3="idk">%s</p><span added="yes">&gt;</span><span added="yes">&gt;</span><p added="yes">-1</p><div added="yes" id="yes" a1="idk" a2="idk" a3="idk" /><span added="yes" a1="idk" a2="idk" a3="idk">-1</span><p added="yes">&amp;</p><div added="yes" id="yes"><a added="yes" href="http://nowebsite.com">0</a><link added="yes" href="http://nowebsite.com" /><span added="yes">%x</span></div><a added="yes" href="http://nowebsite.com">"</a><div added="yes" id="yes" a1="idk" a2="idk" a3="idk" /><p added="yes" a1="idk" a2="idk" a3="idk">-2147483649</p><span added="yes">http://wesifolrhurqewiop;fhjewquoipfhjuqweo.dsh</span><div added="yes" id="yes" a1="idk" a2="idk" a3="idk" /><p added="yes">&lt;</p><a added="yes" href="http://nowebsite.com">-2147483648</a><div added="yes" id="yes" a1="idk" a2="idk" a3="idk" /><div added="yes" id="yes" a1="idk" a2="idk" a3="idk" /><p added="yes">0</p><a added="yes" href="http://nowebsite.com" a1="idk" a2="idk" a3="idk">&lt;</a><a added="yes" href="http://nowebsite.com">-2147483649</a><span added="yes">'</span><a added="yes" href="http://nowebsite.com">http://wesifolrhurqewiop;fhjewquoipfhjuqweo.dsh</a><span added="yes" /><div added="yes" id="yes" a1="idk" a2="idk" a3="idk" /><div added="yes" id="yes" a1="idk" a2="idk" a3="idk" /><span added="yes">%d</span><span added="yes">-2147483648</span><a added="yes" href="http://nowebsite.com">0</a><div added="yes" id="yes" a1="idk" a2="idk" a3="idk" /><a added="yes" href="http://nowebsite.com">%d</a><span added="yes">-2147483648</span><a added="yes" href="http://nowebsite.com" a1="idk" a2="idk" a3="idk">2147483648</a><p added="yes" a1="idk" a2="idk" a3="idk">%p</p><p added="yes" a1="idk" a2="idk" a3="idk">&amp;</p><p added="yes">0</p><p added="yes" a1="idk" a2="idk" a3="idk">1</p><div added="yes" id="yes"><a added="yes" href="http://nowebsite.com">http://wesifolrhurqewiop;fhjewquoipfhjuqweo.dsh</a><link added="yes" href="http://nowebsite.com" /><span added="yes">http://wesifolrhurqewiop;fhjewquoipfhjuqweo.dsh</span></div><span added="yes">&lt;</span><a added="yes" href="http://nowebsite.com" a1="idk" a2="idk" a3="idk">%p</a><a added="yes" href="http://nowebsite.com">2147483647</a><p added="yes">"</p><span added="yes">1</span><span added="yes">1</span><span added="yes" a1="idk" a2="idk" a3="idk">&gt;</span><a added="yes" href="http://nowebsite.com" a1="idk" a2="idk" a3="idk">2147483648</a><div added="yes" id="yes"><a added="yes" href="http://nowebsite.com">-2147483648</a><link added="yes" href="http://nowebsite.com" /><span added="yes">1</span></div><p added="yes">'</p><a added="yes" href="http://nowebsite.com" a1="idk" a2="idk" a3="idk">&gt;</a><span added="yes" a1="idk" a2="idk" a3="idk">&amp;</span></div>
-
-
-    <tail>
-        <a href="%p">&lt;</a>
-    </tail>
-</html>
+{"len": -2147483648, "input": "AAAABBBBCCCC", "more_data": ["a", "bb"]}
