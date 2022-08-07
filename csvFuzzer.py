@@ -13,8 +13,22 @@ import io as ioModule
 sampleInput = "bin/csv1.txt"
 sampleInput2 = "bin/csv2.txt"
 
+log_info = {
+    'segs': 0,
+    'strategies': {}
+}
+
+option_to_str = {
+    0: "adding new lines",
+    1: "modifiying existing data",
+    2: "sending empty input",
+    3: "flipping bits",
+}
 
 def fuzz_csv(program, sampleInputText, lock, option):
+    if option % 1000 == 0:
+        with lock:
+            log_information(option)
     option %= 4
     sampleInput = convertCsvToList(sampleInputText)
 
@@ -34,11 +48,16 @@ def fuzz_csv(program, sampleInputText, lock, option):
     exitCode = io.poll(block=True)
     if (exitCode == -11):
         with lock:
+            if option in log_info['strategies']:
+                log_info['strategies'][option] += 1
+            else:
+                log_info['strategies'][option] = 1
+            log_info['segs'] += 1
             with open("bad.txt", "w") as f:
                 for line in dataToSend:
                     f.write(line + '\n')
     io.close()
- 
+
 # given a iterable list, send in each line of the list to a process in pwntools
 def sendDataToPwnTwls(inputList,process):
     for line in inputList:
@@ -152,10 +171,11 @@ def addLines(sampleInput):
 def emptyCsv():
     return []
 
-# def largeColoum():
-#     selection = [10,20,30,40,50,60,70,80,90,100]
 
-
-if __name__ == "__main__":
-    fuzz_csv("bin/csv1","bin/csv1.txt")
-    fuzz_csv("bin/csv2","bin/csv2.txt")
+def log_information(total):
+    print("======= LOGGING INFO =======")
+    print(f"Iterations: {total}")
+    print(f"Segfaults:  {log_info['segs']}")
+    for option, amount in log_info['strategies'].items():
+        print(f'Segfaults with {option_to_str[option]}: {amount}')
+    print("============================\n\n")

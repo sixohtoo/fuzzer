@@ -13,9 +13,25 @@ import itertools
 MAX_INT = 2147483647
 MIN_INT = -2147483648
 
-lock = mp.Lock()
+
+log_info = {
+    'segs': 0,
+    'strategies': {}
+}
+
+option_to_str = {
+    0: "adding new fields",
+    1: "removing random fields",
+    2: "flipping random bits",
+    3: "swapping data types randomly",
+    4: "smart swapping data types",
+    5: "mutating raw string"
+}
 
 def fuzz_json(prog_name, text, lock, option):
+    if option % 1000 == 0:
+        with lock:
+            log_information(option)
     option %= 6
 
     data = json.loads(text)
@@ -46,6 +62,11 @@ def fuzz_json(prog_name, text, lock, option):
     p.proc.stdin.close()
     if p.poll(True) == -11:
         with lock:
+            if option in log_info['strategies']:
+                log_info['strategies'][option] += 1
+            else:
+                log_info['strategies'][option] = 1
+            log_info['segs'] += 1
             with open("bad.txt", "w") as f:
                 f.write(final)
     p.close()
@@ -213,3 +234,11 @@ def mutate_raw_string(text):
         repeat = random.randrange(200, 1000)
         ret = f'{{{chr(c) * repeat}}}'
         return ret
+
+def log_information(total):
+    print("======= LOGGING INFO =======")
+    print(f"Iterations: {total}")
+    print(f"Segfaults:  {log_info['segs']}")
+    for option, amount in log_info['strategies'].items():
+        print(f'Segfaults with {option_to_str[option]}: {amount}')
+    print("============================\n\n")
