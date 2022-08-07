@@ -10,10 +10,25 @@ from pwn import *
 import utils as u
 import io as ioModule
 import time
+from logger import log_vuln, find_iterations, update_log
 
 sampleInput = "bin/csv1.txt"
 sampleInput2 = "bin/csv2.txt"
 start_time = time.time() 
+
+logging = {
+    "addLines" : 0,
+    "modifiedData": 0,
+    "none": 0,
+    "flipBits": 0,
+}
+
+logging_coverage = {
+    "addLines" : 0,
+    "modifiedData": 0,
+    "none": 0,
+    "flipBits": 0,
+}
 
 def fuzz_csv(program, sampleInputText, lock, option):
     option %= 4
@@ -34,7 +49,7 @@ def fuzz_csv(program, sampleInputText, lock, option):
     io.proc.stdin.close()
     exitCode = io.poll(block=True)
     if (exitCode == -11):
-        log_vuln(start_time,time.time(),payload,vul_counter)
+        log_vuln(start_time,time.time(),dataToSend)
         with lock:
             with open("bad.txt", "w") as f:
                 for line in dataToSend:

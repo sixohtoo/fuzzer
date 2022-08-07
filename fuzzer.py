@@ -64,7 +64,6 @@ def main():
 
 
 
-
 def check_json(text):
 	try:
 		json.loads(text)

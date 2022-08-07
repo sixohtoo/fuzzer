@@ -7,13 +7,17 @@ def log_vuln(start_time,end_time,mutated_text):
     print("--------------------------------------------------------")
 
 
-def update_log(dict,start_time, end_time):
+def update_log(dict,cov_dict,start_time, end_time):
     iterations = find_iterations(dict)
     print(" =================== UPDATE LOG ==========================")
     print(f"iteration: {iterations}")
     print(f"time: {(end_time - start_time)}s")
     for crash in dict:
         print(f"{dict[crash]} crashes were caused from {crash}() method")
+    # fuzzer based code coverage
+    print(f"---")
+    for mutation in cov_dict:
+        print(f"{cov_dict[mutation]} times was mutation stratgey: {mutation} called")
 
 def find_iterations(dict):
     iterations = 0
