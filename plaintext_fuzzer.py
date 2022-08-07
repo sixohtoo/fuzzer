@@ -16,7 +16,6 @@ def fuzz_plaintext(prog_name, text, lock, option):
 	
 	input_text = text.split()
 	if option == 0:
-		# generate a payload of a standard string longer than the input text
 		payload = generate_random_string(random.randrange(0 , 10000))
 	elif option == 1:
 		payload = generate_random_ascii(random.randrange(0, 10000))
@@ -61,23 +60,7 @@ def fuzz_plaintext(prog_name, text, lock, option):
 								f.write(line + '\n')
 				break
 		p.close()
-	# Get paths from the given text
 
-	# for line in input_text:
-	# 	print(line)
-	# 	p.sendline(line.encode())
-
-	# 	sleep(0.1)
-	# 	error_code = p.poll()
-	# 	print(error_code)
-	# 	if error_code == None:
-	# 		paths.append(line)
-	# print(paths)
-	
-
-	# get the good inputs
-	# get code paths from good inputs(coverage)
-	# mutate the last input
 	
 def generate_random_string(length):
 	return ''.join(random.choice(string.printable) for i in range(length))	
