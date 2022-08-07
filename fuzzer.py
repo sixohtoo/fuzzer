@@ -53,6 +53,10 @@ def main():
 	print(f"Fuzzer started at: {time.ctime(time.time())}")
 	print("===========================================================")
 
+	print("===========================================================")
+	print(f"Fuzzer started at: {time.ctime(time.time())}")
+	print("===========================================================")
+
 	with mp.Pool(20) as p:
 		p.map(partial(function, sys.argv[1], text, lock), range(10000))
 
@@ -61,6 +65,7 @@ def main():
 	end_time = time.time()
 
 	print('Fuzzer ran for ' + str(end_time-start_time) + ' seconds.')
+
 
 
 

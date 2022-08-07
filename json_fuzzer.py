@@ -42,6 +42,8 @@ def fuzz_json(prog_name, text, lock, option):
     # if (iterations % 5 == 0 and iterations != 0):
     #     with lock:
     #         update_log(logging,logging_coverage,start_time,time.time())
+    if (find_iterations(logging) % 10000 == 0 and find_iterations(logging) != 0):
+        update_log(logging,start_time,time.time())
     option %= 6
     data = json.loads(text)
     field = u.get_random_field(data)
