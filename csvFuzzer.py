@@ -41,11 +41,15 @@ def fuzz_csv(program, sampleInputText, lock, option):
         dataToSend = None
     elif option == 3:
         dataToSend = flipBits(sampleInput)
-    io = process(program, level='critical')
+    io = process(program, level='critical', timeout=1.5)
     if (dataToSend != None):
         sendDataToPwnTwls(dataToSend,io)
     io.proc.stdin.close()
     exitCode = io.poll(block=True)
+    # Return if detected hangs/infinite loops
+    if (exitCode is None):
+        print("Detected hangs/infinite loops. Program terminated")
+        return 
     if (exitCode == -11):
         with lock:
             if option in log_info['strategies']:

@@ -56,11 +56,17 @@ def fuzz_json(prog_name, text, lock, option):
         final = mutate_raw_string(text)
     
     payload = final
-    p = process(prog_name, level='critical')
+    p = process(prog_name, level='critical', timeout=1.5)
     p.sendline(payload.encode('utf-8'))
 
     p.proc.stdin.close()
-    if p.poll(True) == -11:
+    exit_code = p.poll(True)
+    # Return if detected hangs/infinite loops
+    if exit_code is None:
+        print("Detected hangs/infinite loops. Program terminated")
+        return 
+
+    if exit_code == -11:
         with lock:
             if option in log_info['strategies']:
                 log_info['strategies'][option] += 1

@@ -32,7 +32,7 @@ class XML_Fuzzer:
         Initialisation: 
         self.binary -> binary file to be run
         self.input -> xml string to be fuzzed
-        self.runner -> runner object (run the program
+        self.runner -> runner object (run the program)
         """
         self.binary = binary
         self.input = input
@@ -72,7 +72,7 @@ class XML_Fuzzer:
             exit_code = self.run()
 
             # Return if detected hangs/infinite loops
-            if exit_code == None:
+            if exit_code is None:
                 print("Detected hangs/infinite loops. Program terminated")
                 return 
 
