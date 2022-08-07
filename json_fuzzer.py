@@ -9,12 +9,13 @@ from functools import partial
 from pwn import *
 import os
 import itertools
+from logger import log_vuln
 
 MAX_INT = 2147483647
 MIN_INT = -2147483648
 
 lock = mp.Lock()
-
+start_time = time.time() 
 def fuzz_json(prog_name, text, lock, option):
     option %= 6
 
@@ -45,6 +46,7 @@ def fuzz_json(prog_name, text, lock, option):
 
     p.proc.stdin.close()
     if p.poll(True) == -11:
+        log_vuln(start_time,time.time(),payload,vul_counter)
         with lock:
             with open("bad.txt", "w") as f:
                 f.write(final)

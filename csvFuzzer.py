@@ -9,10 +9,11 @@ import time
 from pwn import *
 import utils as u
 import io as ioModule
+import time
 
 sampleInput = "bin/csv1.txt"
 sampleInput2 = "bin/csv2.txt"
-
+start_time = time.time() 
 
 def fuzz_csv(program, sampleInputText, lock, option):
     option %= 4
@@ -33,6 +34,7 @@ def fuzz_csv(program, sampleInputText, lock, option):
     io.proc.stdin.close()
     exitCode = io.poll(block=True)
     if (exitCode == -11):
+        log_vuln(start_time,time.time(),payload,vul_counter)
         with lock:
             with open("bad.txt", "w") as f:
                 for line in dataToSend:

@@ -11,9 +11,11 @@ import jpeg_fuzzer
 import multiprocessing as mp
 from functools import partial
 import csv
+import time
 
 
 lock = mp.Manager().Lock()
+
 
 def main():
 	with open(sys.argv[2], "rb") as f:
@@ -33,8 +35,13 @@ def main():
 		text = text.decode('utf-8')
 		print('idk wtf this is')
 
+	print("===========================================================")
+	print(f"Fuzzer started at: {time.ctime(time.time())}")
+	print("===========================================================")
+
 	with mp.Pool(20) as p:
 		p.map(partial(function, sys.argv[1], text, lock), range(100000))
+
 
 def check_json(text):
 	try:
