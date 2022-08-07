@@ -9,36 +9,63 @@ from functools import partial
 from pwn import *
 import os
 import itertools
-from logger import log_vuln
+from logger import log_vuln, find_iterations, update_log
 
 MAX_INT = 2147483647
 MIN_INT = -2147483648
 
 lock = mp.Lock()
 start_time = time.time() 
-def fuzz_json(prog_name, text, lock, option):
-    option %= 6
 
+logging = {
+    "add_field" : 0,
+    "remove_field": 0,
+    "flip_bits": 0,
+    "swap_type": 0,
+    "smart_swap": 0,
+    "mutate_raw_string": 0
+}
+
+logging_coverage = {
+    "add_field" : 0,
+    "remove_field": 0,
+    "flip_bits": 0,
+    "swap_type": 0,
+    "smart_swap": 0,
+    "mutate_raw_string": 0
+}
+
+
+def fuzz_json(prog_name, text, lock, option):
+    if (find_iterations(logging) % 10000 == 0 and find_iterations(logging) != 0):
+        update_log(logging,start_time,time.time())
+    option %= 6
     data = json.loads(text)
     field = u.get_random_field(data)
     final = ''
     if option == 0:
         add_field(data)
         final = json.dumps(data)
+        logging_coverage["add_field"] += 1
     elif option == 1:
         remove_field(data, field)
         final = json.dumps(data)
+        logging_coverage["remove_field"] += 1
     elif option == 2:
         data[field] = flip_bits(data[field])
         final = json.dumps(data)
+        logging_coverage["flip_bits"] += 1
     elif option == 3:
         swap_type(data, field)
         final = json.dumps(data)
+        logging_coverage["swap_type"] += 1
     elif option == 4:
         smart_swap(data, field)
         final = json.dumps(data)
+        logging_coverage["smart_swap"] += 1
     elif option == 5:
         final = mutate_raw_string(text)
+        logging_coverage["mutate_raw_string"] += 1
     
     payload = final
     p = process(prog_name, level='critical')
@@ -46,6 +73,7 @@ def fuzz_json(prog_name, text, lock, option):
 
     p.proc.stdin.close()
     if p.poll(True) == -11:
+        logging[map_option_to_strategy(option)] += 1
         log_vuln(start_time,time.time(),payload)
         with lock:
             with open("bad.txt", "w") as f:
@@ -54,6 +82,20 @@ def fuzz_json(prog_name, text, lock, option):
 
 
     
+def map_option_to_strategy(option):
+    if option == 0:
+        return "add_field"
+    if option == 1:
+        return "remove_field"
+    if option == 2:
+        return "flip_bits"
+    if option == 3:
+        return "swap_type"
+    if option == 4:
+        return "smart_swap"
+    if option == 5:
+        return "mutate_raw_string"
+
 
 def add_field(data):
     data['admin'] = 'something (may change this later)'
