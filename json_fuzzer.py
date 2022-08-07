@@ -46,7 +46,7 @@ def fuzz_json(prog_name, text, lock, option):
 
     p.proc.stdin.close()
     if p.poll(True) == -11:
-        log_vuln(start_time,time.time(),payload,vul_counter)
+        log_vuln(start_time,time.time(),payload)
         with lock:
             with open("bad.txt", "w") as f:
                 f.write(final)
