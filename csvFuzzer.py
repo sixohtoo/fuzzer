@@ -42,7 +42,7 @@ def fuzz_csv(program, sampleInputText, lock, option):
 # given a iterable list, send in each line of the list to a process in pwntools
 def sendDataToPwnTwls(inputList,process):
     for line in inputList:
-        process.sendline(line.encode())
+        process.sendline(line.encode('utf-8'))
 
 # send CTRL-D to proram
 # TODO: make it work
