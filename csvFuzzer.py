@@ -34,7 +34,7 @@ def fuzz_csv(program, sampleInputText, lock, option):
     exitCode = io.poll(block=True)
 
     # Return if detected hangs/infinite loops
-    if (exitCode == None):
+    if (exitCode is None):
         print("Detected hangs/infinite loops. Program terminated")
         return 
 

@@ -48,8 +48,7 @@ def main():
 
 		# input_text = open(sys.argv[2], "r").read()
 		with mp.Pool(20) as p:
-			f_list = []
-			p.map(partial(function, sys.argv[1], input_text, lock), range(100))
+			p.map(partial(function, sys.argv[1], input_text, lock), range(500))
 
 	print('Fuzzing done')
 

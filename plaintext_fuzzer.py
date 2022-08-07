@@ -6,13 +6,13 @@ import multiprocessing as mp
 import subprocess as sub
 from itertools import permutations
 from pwn import *
+import utils as u
 
 lock = mp.Lock()
 
 def fuzz_plaintext(prog_name, text, lock, option):
-	option %= 3
-
-	p = process(prog_name, timeout = 2.0, level = 'critical')
+	option %= 4
+	p = process(prog_name, level = 'critical')
 	
 	input_text = text.split()
 	if option == 0:
@@ -22,25 +22,26 @@ def fuzz_plaintext(prog_name, text, lock, option):
 		payload = generate_random_ascii(random.randrange(0, 10000))
 	elif option == 2:
 		payload = generate_random_number(random.randrange(0, 10000))
-	
+	elif option == 3:
+		payload = flip_bits(text)
+
+
 	# If the input text is just 1 line then we just send our payload
 	if len(input_text) == 1:
+		print(payload)
 		p.sendline(payload.encode())
 
 		error_code = p.poll(True)
 
-		# Return if detected hangs/infinite loops
-		if error_code == None:
-			print("Detected hangs/infinite loops. Program terminated")
-			return 
-
 		if error_code != 0:
 			with lock:
 				with open("bad.txt", "w") as f:
+					print("hi")
 					f.write(payload)
 
 		p.close()
 	else:
+		print(input_text)
 		# Generate combinations of each line of input and the payload
 		num_inputs = len(input_text)
 
@@ -55,16 +56,13 @@ def fuzz_plaintext(prog_name, text, lock, option):
 			sleep(0.1)
 
 			error_code = p.poll()
-
-			# Return if detected hangs/infinite loops
-			if error_code == None:
-				print("Detected hangs/infinite loops. Program terminated")
-				return 
-			else:
+			if error_code is not None:
 				if error_code == -11:
 					with lock:
 						with open("bad.txt", "w") as f:
-							f.write(str(input_text))
+							print("bye")
+							for line in input_text:
+								f.write(line + '\n')
 				break
 		p.close()
 	# Get paths from the given text
@@ -95,6 +93,18 @@ def generate_random_ascii(length):
 def generate_random_number(num_range):
 	return str(random.randint(-num_range, num_range))
 
+def flip_bits(sample_input):
+    return u.bits_to_str(u.flip_bits(u.str_to_bits(sample_input)))
+
+def keyword_addition(sample_input):
+	sample_input += "admin"
+	sample_input += "%d"
+	sample_input += "password"
+	return sample_input
+
+def large_plaintext(sample_input):
+	return sample_input + ("%d%n99999" * 999)
+
 
 if __name__ == '__main__':
 
@@ -102,4 +112,3 @@ if __name__ == '__main__':
 	text = open(sys.argv[2], "r").read()
 	print('Running plaintext fuzzer...')
 	fuzz_plaintext(binary, text, lock, random.randrange(10000))
-

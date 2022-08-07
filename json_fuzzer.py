@@ -47,7 +47,7 @@ def fuzz_json(prog_name, text, lock, option):
     exit_code = p.poll(True)
 
     # Return if detected hangs/infinite loops
-    if exit_code == None:
+    if exit_code is None:
         print("Detected hangs/infinite loops. Program terminated")
         return 
 
