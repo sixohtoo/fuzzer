@@ -15,8 +15,27 @@ MIN_INT = -2147483648
 
 lock = mp.Lock()
 
+log_info = {
+    'segs': 0,
+    'strategies': set()
+}
+
+option_to_str = {
+    0: "adding new fields",
+    1: "removing random fields",
+    2: "flipping random bits",
+    3: "swapping data types randomly",
+    4: "smart swapping data types",
+    5: "mutating raw string"
+}
+
 def fuzz_json(prog_name, text, lock, option):
+    if option % 1000 == 0:
+        with lock:
+            log_information(option)
     option %= 6
+
+    # logging['total'] += 1
 
     data = json.loads(text)
     field = u.get_random_field(data)
@@ -35,7 +54,11 @@ def fuzz_json(prog_name, text, lock, option):
         final = json.dumps(data)
     elif option == 4:
         smart_swap(data, field)
-        final = json.dumps(data)
+        try:
+            final = json.dumps(data)
+        except:
+            print("da thing crashed")
+            print("data:", data)
     elif option == 5:
         final = mutate_raw_string(text)
     
@@ -46,6 +69,8 @@ def fuzz_json(prog_name, text, lock, option):
     p.proc.stdin.close()
     if p.poll(True) == -11:
         with lock:
+            log_info['segs'] += 1
+            log_info['strategies'].add(option_to_str[option])
             with open("bad.txt", "w") as f:
                 f.write(final)
     p.close()
@@ -165,7 +190,7 @@ def smart_swap_string(data, field):
         data[field] = ""
     elif option == 7:
         byte = random.randrange(0, 255)
-        data[field] = p8(byte)
+        data[field] = str(p8(byte))
 
 def mutate_raw_string(text):
     """
@@ -213,3 +238,11 @@ def mutate_raw_string(text):
         repeat = random.randrange(200, 1000)
         ret = f'{{{chr(c) * repeat}}}'
         return ret
+
+def log_information(total):
+    print("======= LOGGING INFO =======")
+    print(f"Iterations: {total}")
+    print(f"Segfaults:  {log_info['segs']}")
+    print("Successful strategies:")
+    print('\n'.join(log_info['strategies']))
+    print("============================\n\n")
