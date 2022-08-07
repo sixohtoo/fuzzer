@@ -45,6 +45,7 @@ def main():
 		print('it jpg it jpg')
 	else:
 		print('File is plaintext')
+		text = text.decode('utf-8')
 		function = plaintext_fuzzer.fuzz_plaintext
 
 	# input_text = open(sys.argv[2], "r").read()
