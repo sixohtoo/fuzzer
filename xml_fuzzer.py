@@ -17,7 +17,7 @@ class Runner:
         Run the binary with the given input and 
         return process exit code.
         """
-        p = process(self.binary, timeout=1.0, level="critical")
+        p = process(self.binary, timeout=1.5, level="critical")
         p.sendline(input.encode('UTF-8'))
         p.shutdown()
         exit_code = p.poll(block=True)
@@ -122,8 +122,9 @@ class XML_Fuzzer:
             if not added_element and p < 25:
                 if u.check_element_modification(child.tag) and (child.get("added") != "yes"): 
                     choices = [fc.value for fc in u.ELEMENTS]
-                    new_element = random.choice(choices) 
-                    child.append(et.fromstring(new_element))
+                    new_element = et.fromstring(random.choice(choices)) 
+                    # child.append(et.fromstring(new_element))
+                    child = u.add_elements(child, new_element)
                     added_element = True
 
         return xml

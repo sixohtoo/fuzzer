@@ -48,7 +48,11 @@ def main():
 
 		# input_text = open(sys.argv[2], "r").read()
 		with mp.Pool(20) as p:
-			p.map(partial(function, sys.argv[1], input_text, lock), range(500))
+			# for i in range(0,10):
+				# sys.settrace(tracing)
+			# p.apply_async(function, sys.argv[1], input_text, lock, i)
+			p.map(partial(function, sys.argv[1], input_text, lock), range(10))
+				# sys.settrace(None)
 
 	print('Fuzzing done')
 
@@ -122,7 +126,33 @@ def convert2DList(list,delimiter):
         retList.append(newLine)
     return retList
 
-if __name__ == '__main__':
-	# lock = mp.Manager().Lock()
+# all_coverage = []
+# csv_mutators = ["addLines", "modifiedData", "setToNone", "flipBits"]
+# json_mutators = ["add_field",  "remove_field", "flip_bits", "smart_swap_int", "smart_swap_string", "mutate_raw_string"]
+# xml_mutators = ["bytes_replace", "add_elements"]
+# plaintext_mutators = ["generate_random_string", "generate_random_ascii", "generate_random_number"]
 
+# all_mutators = []
+# all_mutators += csv_mutators
+# all_mutators += json_mutators
+# all_mutators += xml_mutators
+# all_mutators += plaintext_mutators
+
+# def tracing(frame, event, args):
+# 	if event == 'line':
+# 		function_name = frame.f_code.co_name
+# 		# line = frame.f_lineno
+# 		if function_name in all_mutators:
+# 			print(function_name)
+# 		# 	all_coverage.append(function_name)
+# 	return tracing
+
+#     # return tracing
+
+if __name__ == '__main__':
+
+	# lock = mp.Manager().Lock()
+	# sys.settrace(tracing)
 	main()
+	# sys.settrace(None)
+	# print(set(all_coverage))

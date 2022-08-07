@@ -143,3 +143,6 @@ def check_element_modification(tag):
     if tag in tags:
         return False
     return True
+
+def add_elements(element, new_element):
+    return element.append(new_element)

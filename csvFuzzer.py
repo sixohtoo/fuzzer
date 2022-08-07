@@ -24,7 +24,7 @@ def fuzz_csv(program, sampleInputText, lock, option):
         dataToSend = modifiedData(sampleInput)
     elif option == 2:
         # send in nothing to program, ie simulate CTRL-D
-        dataToSend = None
+        dataToSend = setToNone()
     elif option == 3:
         dataToSend = flipBits(sampleInput)
     io = process(program, timeout=1.5, level='critical')
@@ -151,6 +151,10 @@ def addLines(sampleInput):
     for i in range(randomAsciiFromItem(selection)):
         data.append(rowToAdd)
     return convert2DList(data,',')
+
+# Set the data to None
+def setToNone():
+    return None
 
 
 #------------------------------------------ Generating new input to fuzz ------------------------------------- #
