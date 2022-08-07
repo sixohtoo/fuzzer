@@ -17,6 +17,7 @@ import time
 
 lock = mp.Manager().Lock()
 
+
 def main():
 
 	if len(sys.argv) != 3:
@@ -48,6 +49,10 @@ def main():
 		function = plaintext_fuzzer.fuzz_plaintext
 
 	# input_text = open(sys.argv[2], "r").read()
+	print("===========================================================")
+	print(f"Fuzzer started at: {time.ctime(time.time())}")
+	print("===========================================================")
+
 	with mp.Pool(20) as p:
 		p.map(partial(function, sys.argv[1], text, lock), range(10000))
 
@@ -56,6 +61,7 @@ def main():
 	end_time = time.time()
 
 	print('Fuzzer ran for ' + str(end_time-start_time) + ' seconds.')
+
 
 
 
