@@ -7,12 +7,14 @@ import json
 import xml
 import json_fuzzer
 import csvFuzzer
+import xml_fuzzer
 import jpeg_fuzzer
 import plaintext_fuzzer
 import multiprocessing as mp
 from functools import partial
 import csv
 import time
+import xml.etree.ElementTree as et
 
 
 lock = mp.Manager().Lock()
@@ -32,25 +34,31 @@ def main():
 
 	start_time = time.time()
 
-	if check_json(text):
-		print('it json!?!?!')
-		function = json_fuzzer.fuzz_json
-		text = text.decode('utf-8')
-	elif check_csv(text):
-		print('it csb!>>!')
-		function = csvFuzzer.fuzz_csv
-		text = text.decode('utf-8')
-	elif check_jpg(text):
-		function = jpeg_fuzzer.fuzz_jpeg
-		print('it jpg it jpg')
+	if check_xml(text):
+		print('File is xml')
+		input_text = open(sys.argv[2], "r").read()
+		fuzzer = xml_fuzzer.XML_Fuzzer(sys.argv[1], input_text)
+		fuzzer.fuzz()
 	else:
-		print('File is plaintext')
-		text = text.decode('utf-8')
-		function = plaintext_fuzzer.fuzz_plaintext
+		if check_json(text):
+			print('it json!?!?!')
+			function = json_fuzzer.fuzz_json
+			text = text.decode('utf-8')
+		elif check_csv(text):
+			print('it csb!>>!')
+			function = csvFuzzer.fuzz_csv
+			text = text.decode('utf-8')
+		elif check_jpg(text):
+			function = jpeg_fuzzer.fuzz_jpeg
+			print('it jpg it jpg')
+		else:
+			print('File is plaintext')
+			text = text.decode('utf-8')
+			function = plaintext_fuzzer.fuzz_plaintext
 
 	# input_text = open(sys.argv[2], "r").read()
-	with mp.Pool(20) as p:
-		p.map(partial(function, sys.argv[1], text, lock), range(10000))
+		with mp.Pool(20) as p:
+			p.map(partial(function, sys.argv[1], text, lock), range(10000))
 
 	print('Fuzzing done')
 
@@ -69,7 +77,13 @@ def check_json(text):
 	return True
 
 def check_xml(text):
-	return text[0] == b'<'
+	# text = text.read()
+	try:
+		et.fromstring(text)
+	except et.ParseError:
+		return False
+	else:
+		return True
 
 def check_csv(text):
 	# Move to the start of the file
