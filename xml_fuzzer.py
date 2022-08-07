@@ -17,7 +17,7 @@ class Runner:
         Run the binary with the given input and 
         return process exit code.
         """
-        p = process(self.binary)
+        p = process(self.binary, timeout=1.0, level="critical")
         p.sendline(input.encode('UTF-8'))
         p.shutdown()
         exit_code = p.poll(block=True)
@@ -25,7 +25,6 @@ class Runner:
         p.stderr.close()
 
         return exit_code
-
 
 class XML_Fuzzer:
     def __init__(self, binary, input):
@@ -35,7 +34,6 @@ class XML_Fuzzer:
         self.input -> xml string to be fuzzed
         self.runner -> runner object (run the program
         """
-        super().__init__()
         self.binary = binary
         self.input = input
         self.runner = Runner(self.binary)
@@ -69,17 +67,27 @@ class XML_Fuzzer:
 
         while True:
             exit_code = self.run()
-            
+
+            # Return if detected hangs/infinite loops
+            if exit_code == None:
+                print("Detected hangs/infinite loops. Program terminated")
+                return 
+
             # Return if there's a segfault
-            ret_input = self.input
-            if exit_code != 0:
-                if exit_code == -11:
-                    print(f"Exit code: {exit_code}, Status: Found a SEGFAULT!\n")
-                else:
-                    print(f"Exit code: {exit_code}, Status: Unknown Error\n")
-                return (ret_input, exit_code)
-            else:
-                print(f"Exit code: {exit_code}, Status: Success\n")
+            ret_input = self.input  
+            if exit_code == -11:
+                with open("bad.txt", "w") as f:
+                    f.write(ret_input)
+                break
+
+            # if exit_code != 0:
+            #     if exit_code == -11:
+            #         print(f"Exit code: {exit_code}, Status: Found a SEGFAULT!\n")
+            #     else:
+            #         print(f"Exit code: {exit_code}, Status: Unknown Error\n")
+            #     return (ret_input, exit_code)
+            # else:
+            #     print(f"Exit code: {exit_code}, Status: Success\n")
             
             # Keep mutating
             xml = self.mutate(xml)
@@ -119,21 +127,3 @@ class XML_Fuzzer:
                     added_element = True
 
         return xml
-
-if __name__ == '__main__':
-    nargs = len(sys.argv)
-    
-    if nargs < 3:
-        print(f"Required 3 arguments. Given {nargs} instead.")
-    else:
-        valid_input = sys.argv[1]
-        binary = sys.argv[2]
-
-        with open(valid_input, "r") as f:
-            input = f.read().strip()
-        
-        fuzzer = XML_Fuzzer(binary, input)
-        (bad_text, exit_code) = fuzzer.fuzz()
-
-        with open("bad.txt", "w") as f:
-            f.write(bad_text)

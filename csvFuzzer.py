@@ -8,14 +8,15 @@ import os
 import time
 from pwn import *
 import utils as u
+import io as ioModule
 
 sampleInput = "bin/csv1.txt"
 sampleInput2 = "bin/csv2.txt"
 
 
-def fuzz_csv(program, sampleInputFile):
-    sampleInput = convertCsvToList(sampleInputFile)
-    option = randomAsciiFromItem(list(range(1,10000))) % 4
+def fuzz_csv(program, sampleInputText, lock, option):
+    option %= 4
+    sampleInput = convertCsvToList(sampleInputText)
 
     if option == 0:
         dataToSend = addLines(sampleInput)
@@ -26,13 +27,23 @@ def fuzz_csv(program, sampleInputFile):
         dataToSend = None
     elif option == 3:
         dataToSend = flipBits(sampleInput)
-    io = process(program)
+    io = process(program, timeout=1.5, level='critical')
     if (dataToSend != None):
         sendDataToPwnTwls(dataToSend,io)
     io.proc.stdin.close()
     exitCode = io.poll(block=True)
-    if (exitCode != 0):
-        print(f"The data that causes the program to crash is : {dataToSend}")
+
+    # Return if detected hangs/infinite loops
+    if (exitCode == None):
+        print("Detected hangs/infinite loops. Program terminated")
+        return 
+
+    if (exitCode == -11):
+        with lock:
+            with open("bad.txt", "w") as f:
+                for line in dataToSend:
+                    f.write(line + '\n')
+    io.close()
  
 # given a iterable list, send in each line of the list to a process in pwntools
 def sendDataToPwnTwls(inputList,process):
@@ -62,11 +73,11 @@ def randomAsciiFromItem(selection):
 #i,j,k,et
 # --------------------------------
 # will output to [[header,must,stay,intact],[a,b,c,S],[e,f,g,ecr],[i,j,k,et]]
-def convertCsvToList(csvFile):
+def convertCsvToList(csvString):
     outputList = []
-    with open(csvFile, mode='r') as f:
-        for row in csv.reader(f,delimiter=','):
-            outputList.append(row)
+    f = ioModule.StringIO(csvString)
+    for row in csv.reader(f,delimiter=','):
+        outputList.append(row)
     return outputList
 
 def convert2DList(list,delimiter):
