@@ -35,28 +35,27 @@ def main():
 	start_time = time.time()
 
 	if check_xml(text):
-		print('File is xml')
+		print('Input is xml')
 		input_text = open(sys.argv[2], "r").read()
 		fuzzer = xml_fuzzer.XML_Fuzzer(sys.argv[1], input_text)
 		fuzzer.fuzz()
 	else:
 		if check_json(text):
-			print('it json!?!?!')
+			print('Input is json')
 			function = json_fuzzer.fuzz_json
 			text = text.decode('utf-8')
 		elif check_csv(text):
-			print('it csb!>>!')
+			print('input is csv')
 			function = csvFuzzer.fuzz_csv
 			text = text.decode('utf-8')
 		elif check_jpg(text):
 			function = jpeg_fuzzer.fuzz_jpeg
-			print('it jpg it jpg')
+			print('input is a jpeg')
 		else:
-			print('File is plaintext')
+			print('input is plaintext')
 			text = text.decode('utf-8')
 			function = plaintext_fuzzer.fuzz_plaintext
 
-	# input_text = open(sys.argv[2], "r").read()
 		with mp.Pool(20) as p:
 			p.map(partial(function, sys.argv[1], text, lock), range(10000))
 
@@ -137,6 +136,4 @@ def convert2DList(list,delimiter):
     return retList
 
 if __name__ == '__main__':
-	# lock = mp.Manager().Lock()
-
 	main()

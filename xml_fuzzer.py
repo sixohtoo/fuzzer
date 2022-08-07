@@ -37,6 +37,9 @@ class XML_Fuzzer:
         self.binary = binary
         self.input = input
         self.runner = Runner(self.binary)
+        self.log_info = {
+            'segs' : 0,
+        }
     
     def check_type(self):
         """
@@ -79,15 +82,6 @@ class XML_Fuzzer:
                 with open("bad.txt", "w") as f:
                     f.write(ret_input)
                 break
-
-            # if exit_code != 0:
-            #     if exit_code == -11:
-            #         print(f"Exit code: {exit_code}, Status: Found a SEGFAULT!\n")
-            #     else:
-            #         print(f"Exit code: {exit_code}, Status: Unknown Error\n")
-            #     return (ret_input, exit_code)
-            # else:
-            #     print(f"Exit code: {exit_code}, Status: Success\n")
             
             # Keep mutating
             xml = self.mutate(xml)
@@ -128,3 +122,9 @@ class XML_Fuzzer:
                     added_element = True
 
         return xml
+
+    def log(self, total):
+        print("======= LOGGING INFO =======")
+        print(f"Iterations: {total}")
+        print(f"Segfaults:  {log_info['segs']}")
+        print("============================\n\n")

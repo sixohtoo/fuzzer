@@ -8,9 +8,22 @@ from itertools import permutations
 from pwn import *
 import utils as u
 
-lock = mp.Lock()
+log_info = {
+    'segs': 0,
+    'strategies': {}
+}
+
+option_to_str = {
+    0: "generating a random string",
+    1: "generating random bytes",
+    2: "generating random numbers",
+    3: "flipping bits",
+}
 
 def fuzz_plaintext(prog_name, text, lock, option):
+	if option % 1000 == 0:
+		with lock:
+			log_information(option)
 	option %= 4
 	p = process(prog_name, level = 'critical')
 	
@@ -33,6 +46,11 @@ def fuzz_plaintext(prog_name, text, lock, option):
 
 		if error_code == -11:
 			with lock:
+				if option in log_info['strategies']:
+					log_info['strategies'][option] += 1
+				else:
+						log_info['strategies'][option] = 1
+				log_info['segs'] += 1
 				with open("bad.txt", "w") as f:
 					f.write(payload)
 
@@ -55,6 +73,11 @@ def fuzz_plaintext(prog_name, text, lock, option):
 			if error_code is not None:
 				if error_code == -11:
 					with lock:
+						if option in log_info['strategies']:
+							log_info['strategies'][option] += 1
+						else:
+							log_info['strategies'][option] = 1
+						log_info['segs'] += 1
 						with open("bad.txt", "w") as f:
 							for line in input_text:
 								f.write(line + '\n')
@@ -84,10 +107,10 @@ def keyword_addition(sample_input):
 def large_plaintext(sample_input):
 	return sample_input + ("%d%n99999" * 999)
 
-
-if __name__ == '__main__':
-
-	binary = sys.argv[1]
-	text = open(sys.argv[2], "r").read()
-	print('Running plaintext fuzzer...')
-	fuzz_plaintext(binary, text, lock, random.randrange(10000))
+def log_information(total):
+    print("======= LOGGING INFO =======")
+    print(f"Iterations: {total}")
+    print(f"Segfaults:  {log_info['segs']}")
+    for option, amount in log_info['strategies'].items():
+        print(f'Segfaults with {option_to_str[option]}: {amount}')
+    print("============================\n\n")
