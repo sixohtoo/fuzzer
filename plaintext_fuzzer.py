@@ -32,7 +32,7 @@ def fuzz_plaintext(prog_name, text, lock, option):
 
 		error_code = p.poll(True)
 
-		if error_code != 0:
+		if error_code == -11:
 			with lock:
 				with open("bad.txt", "w") as f:
 					f.write(payload)
