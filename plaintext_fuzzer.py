@@ -23,7 +23,7 @@ def fuzz_plaintext(prog_name, text, lock, option):
 	elif option == 2:
 		payload = generate_random_number(random.randrange(0, 10000))
 	elif option == 3:
-		payload = flip_bits(text)
+		payload = flip_bits(input_text[random.randrange(len(input_text))])
 
 
 	# If the input text is just 1 line then we just send our payload
@@ -57,7 +57,8 @@ def fuzz_plaintext(prog_name, text, lock, option):
 				if error_code == -11:
 					with lock:
 						with open("bad.txt", "w") as f:
-							f.write(str(input_text))
+							for line in input_text:
+								f.write(line + '\n')
 				break
 		p.close()
 	# Get paths from the given text
